@@ -102,6 +102,7 @@ func (r *firewallRuleResource) Create(ctx context.Context, req resource.CreateRe
 		},
 		Port:           hcloud.Ptr(plan.Port.ValueString()),
 		DestinationIPs: []net.IPNet{},
+		Description:    hcloud.Ptr(plan.Description.ValueString()),
 	}
 	rules = append(rules, rule)
 
