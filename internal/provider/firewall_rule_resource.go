@@ -48,7 +48,7 @@ func (r *firewallRuleResource) Configure(_ context.Context, req resource.Configu
 
 // Metadata returns the resource type name.
 func (r *firewallRuleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_repo"
+	resp.TypeName = req.ProviderTypeName + "_rule"
 }
 
 // Schema defines the schema for the resource.

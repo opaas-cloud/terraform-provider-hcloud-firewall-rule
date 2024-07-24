@@ -12,7 +12,7 @@ type FirewallRule struct {
 }
 
 type FirewallRuleModel struct {
-	Name     types.String `tfsdk:"name"`
+	Name     types.String `tfsdk:"firewall_name"`
 	Token    types.String `tfsdk:"token"`
 	SourceIP types.String `tfsdk:"source_ip"`
 	Port     types.String `tfsdk:"port"`
