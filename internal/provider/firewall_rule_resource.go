@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"net"
+	"slices"
 	"terraform-provider-hcloud-firewall-rule/tools"
 )
 
@@ -125,11 +126,36 @@ func (r *firewallRuleResource) Update(_ context.Context, _ resource.UpdateReques
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *firewallRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state tools.FirewallRule
+	var state tools.FirewallRuleModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
+
+	client := hcloud.NewClient(hcloud.WithToken(state.Token.ValueString()))
+	firewall, _, _ := client.Firewall.GetByName(ctx, state.Name.ValueString())
+
+	test := mapModels(firewall.Rules, func(i hcloud.FirewallRule) string {
+		return i.SourceIPs[0].IP.String()
+	})
+
+	newRules := slices.Delete(firewall.Rules, slices.Index(test, state.SourceIP.ValueString()), slices.Index(test, state.SourceIP.ValueString())+1)
+	opts := hcloud.FirewallSetRulesOpts{
+		Rules: newRules,
+	}
+
+	_, _, _ = client.Firewall.SetRules(ctx, firewall, opts)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+func mapModels(data []hcloud.FirewallRule, f func(model hcloud.FirewallRule) string) []string {
+
+	mapped := make([]string, len(data))
+
+	for i, e := range data {
+		mapped[i] = f(e)
+	}
+
+	return mapped
 }
