@@ -68,6 +68,9 @@ func (r *firewallRuleResource) Schema(_ context.Context, _ resource.SchemaReques
 			"port": schema.StringAttribute{
 				Required: true,
 			},
+			"description": schema.StringAttribute{
+				Required: true,
+			},
 		},
 	}
 }
@@ -134,10 +137,10 @@ func (r *firewallRuleResource) Delete(ctx context.Context, req resource.DeleteRe
 	firewall, _, _ := client.Firewall.GetByName(ctx, state.Name.ValueString())
 
 	test := mapModels(firewall.Rules, func(i hcloud.FirewallRule) string {
-		return i.SourceIPs[0].IP.String()
+		return *i.Description
 	})
 
-	newRules := slices.Delete(firewall.Rules, slices.Index(test, state.SourceIP.ValueString()), slices.Index(test, state.SourceIP.ValueString())+1)
+	newRules := slices.Delete(firewall.Rules, slices.Index(test, state.Description.ValueString()), slices.Index(test, state.Description.ValueString())+1)
 	opts := hcloud.FirewallSetRulesOpts{
 		Rules: newRules,
 	}
