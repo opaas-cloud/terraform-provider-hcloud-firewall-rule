@@ -82,18 +82,30 @@ func (r *firewallRuleResource) Create(ctx context.Context, req resource.CreateRe
 
 	client := hcloud.NewClient(hcloud.WithToken(plan.Token.ValueString()))
 	firewall, _, _ := client.Firewall.GetByName(ctx, plan.Name.ValueString())
-	var port = plan.Port.ValueString()
-	firewall.Rules = append(firewall.Rules, hcloud.FirewallRule{
-		Direction: "in",
-		Protocol:  "tcp",
-		SourceIPs: []net.IPNet{{IP: net.ParseIP(plan.SourceIP.ValueString())}},
-		Port:      &port,
-	})
 
-	_, _, err := client.Firewall.SetRules(ctx, firewall, hcloud.FirewallSetRulesOpts{Rules: firewall.Rules})
-	if err != nil {
-		return
+	rules := firewall.Rules
+
+	sourceIp, _, _ := net.ParseCIDR(plan.SourceIP.ValueString())
+
+	rule := hcloud.FirewallRule{
+		Direction: hcloud.FirewallRuleDirectionIn,
+		Protocol:  hcloud.FirewallRuleProtocolTCP,
+		SourceIPs: []net.IPNet{
+			{
+				IP:   sourceIp,
+				Mask: net.IPv4Mask(255, 255, 255, 255),
+			},
+		},
+		Port:           hcloud.Ptr(plan.Port.ValueString()),
+		DestinationIPs: []net.IPNet{},
 	}
+	rules = append(rules, rule)
+
+	opts := hcloud.FirewallSetRulesOpts{
+		Rules: rules,
+	}
+
+	_, _, _ = client.Firewall.SetRules(ctx, firewall, opts)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
