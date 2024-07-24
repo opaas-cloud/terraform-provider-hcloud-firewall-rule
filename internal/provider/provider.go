@@ -35,7 +35,7 @@ type firewallRuleProviderModel struct {
 
 // Metadata returns the provider type name.
 func (p *firewallRuleProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "hcloud_firewall"
+	resp.TypeName = "opaas-hcloud-firewall"
 	resp.Version = p.version
 }
 
