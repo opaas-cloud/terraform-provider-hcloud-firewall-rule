@@ -141,6 +141,10 @@ func (r *firewallRuleResource) Delete(ctx context.Context, req resource.DeleteRe
 		return *i.Description
 	})
 
+	if !slices.Contains(test, state.Description.ValueString()) {
+		return
+	}
+
 	newRules := slices.Delete(firewall.Rules, slices.Index(test, state.Description.ValueString()), slices.Index(test, state.Description.ValueString())+1)
 	opts := hcloud.FirewallSetRulesOpts{
 		Rules: newRules,
